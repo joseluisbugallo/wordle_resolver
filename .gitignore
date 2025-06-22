@@ -1,0 +1,64 @@
+# ########################################
+# ### .gitignore para Proyectos Python ###
+# ########################################
+
+# 1. Entorno Virtual
+# No subir nunca la carpeta del entorno virtual. Contiene las librerías instaladas
+# y es específica de cada máquina.
+/venv/
+/.venv/
+/env/
+/virtual/
+
+
+# 2. Caché de Python y archivos de bytecode
+# Estos archivos son generados automáticamente por Python para mejorar el rendimiento.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# 3. Artefactos de Compilación (PyInstaller)
+# Carpetas generadas durante el proceso de creación del .exe
+/build/
+/dist/
+
+# El archivo .spec es generado por PyInstaller. Puedes decidir si quieres versionarlo.
+# A menudo es útil si lo modificas manualmente con configuraciones especiales.
+# Descomenta la siguiente línea si prefieres NO subirlo al repositorio.
+# *.spec
+
+
+# 4. Archivos de Configuración de IDEs y Editores
+# Evita que las configuraciones locales de tu editor se suban.
+/.vscode/
+/.idea/
+*.sublime-project
+*.sublime-workspace
+
+
+# 5. Archivos de Sistema Operativo
+# Archivos de metadatos generados por el sistema operativo.
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+desktop.ini
+
+
+# 6. Logs y Archivos Temporales
+# Ignorar archivos de registro y otros archivos temporales.
+*.log
+*.log.*
+*.swp
+*.tmp
+*.spec
+
+
+# 7. Archivos de Entorno
+# NUNCA subas archivos .env que contengan contraseñas o claves de API.
+.env
+.env.*
+# Es una buena práctica versionar un archivo de ejemplo sin datos sensibles.
+!/.env.example
