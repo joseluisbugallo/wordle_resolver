@@ -6,6 +6,11 @@ from collections import Counter, defaultdict
 import threading
 import os
 import sys
+import webbrowser
+import urllib.request
+
+# --- NUEVO: Añadir versión a la aplicación ---
+__version__ = "1.0.1"
 
 def resource_path(relative_path):
     """ Obtiene la ruta absoluta al recurso, funciona para desarrollo y para PyInstaller """
@@ -132,6 +137,9 @@ class WordleSolverApp:
         
         self.create_widgets()
         self.update_grid_colors()
+
+        # --- NUEVO: Iniciar la comprobación de actualizaciones en segundo plano ---
+        threading.Thread(target=self.check_for_updates, daemon=True).start()
 
     def create_widgets(self):
         self.root.grid_columnconfigure(0, weight=1, uniform="group1")
@@ -431,6 +439,44 @@ class WordleSolverApp:
         else:
             self.spinner_label.config(text="❌ Ocurrió un error durante la búsqueda.")
         self.search_button.config(state=tk.NORMAL)
+
+    # NUEVO: Método para comprobar si hay actualizaciones en GitHub
+    def check_for_updates(self):
+        """
+        Comprueba la última release en GitHub y la compara con la versión actual.
+        """
+        repo_url = "https://api.github.com/repos/joseluisbugallo/wordle_resolver/releases/latest"
+        
+        try:
+            # Hacemos la petición a la API de GitHub
+            with urllib.request.urlopen(repo_url) as response:
+                data = json.loads(response.read().decode())
+            
+            # La 'tag_name' en GitHub suele ser la versión (ej: "v1.1.0")
+            latest_version_tag = data['tag_name']
+            # Quitamos la 'v' del principio para comparar (ej: "1.1.0")
+            latest_version = latest_version_tag.lstrip('v')
+
+            # Comparamos con la versión actual de la app
+            if latest_version != __version__:
+                # Si las versiones son diferentes, preguntamos al usuario si quiere actualizar.
+                # Usamos root.after para asegurar que el messagebox se ejecuta en el hilo principal de la GUI.
+                download_url = data['html_url'] # URL a la página de la release
+                self.root.after(0, self.ask_for_update, latest_version, download_url)
+
+        except Exception as e:
+            # Si hay un error (sin internet, etc.), simplemente no hacemos nada.
+            print(f"No se pudo comprobar si hay actualizaciones: {e}")
+
+    # NUEVO: Método para mostrar el mensaje de actualización (se llama desde el anterior)
+    def ask_for_update(self, version, url):
+        """Muestra un messagebox para notificar al usuario y abrir el navegador."""
+        msg = f"Hay una nueva versión disponible: {version}\n\n" \
+              f"Tu versión actual es: {__version__}\n\n" \
+              "¿Quieres ir a la página de descargas ahora?"
+        
+        if messagebox.askyesno("Actualización Disponible", msg):
+            webbrowser.open_new_tab(url)
 
 if __name__ == "__main__":
     root = tk.Tk()
