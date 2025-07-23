@@ -10,7 +10,7 @@ import webbrowser
 import urllib.request
 
 # --- NUEVO: Añadir versión a la aplicación ---
-__version__ = "1.0.1"
+__version__ = "1.1.1"
 
 def resource_path(relative_path):
     """ Obtiene la ruta absoluta al recurso, funciona para desarrollo y para PyInstaller """
