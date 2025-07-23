@@ -226,14 +226,39 @@ class WordleSolverApp:
         self.update_grid_colors()
 
     def on_key_release(self, event, row, col):
-        if event.char.isalpha() and col < self.palabra_longitud - 1:
-            self.grid_cells[row][col+1]['widget'].focus_set()
-        
         widget = self.grid_cells[row][col]['widget']
         current_text = widget.get()
-        if current_text:
-            widget.delete(0, tk.END)
-            widget.insert(0, current_text.upper())
+
+        if not current_text:
+            return
+
+        # 1. Lógica de mayúsculas y foco
+        widget.delete(0, tk.END)
+        widget.insert(0, current_text.upper())
+        if event.char.isalpha() and col < self.palabra_longitud - 1:
+            self.grid_cells[row][col+1]['widget'].focus_set()
+
+        # 2. MODIFICADO: Llamamos a la nueva función centralizada
+        if event.char.isalpha():
+            self._heredar_estado_verde(row, col)
+            # Actualizamos los colores para que el cambio sea inmediato
+            self.update_grid_colors()
+
+    # NUEVO: Función de ayuda para reutilizar la lógica
+    def _heredar_estado_verde(self, row, col):
+        """
+        Revisa las filas superiores en la misma columna. Si alguna celda es 'correct',
+        establece el estado de la celda actual (row, col) a 'correct'.
+        """
+        # Iteramos sobre todas las filas anteriores a la actual
+        for r_prev in range(row):
+            # Verificamos si la celda en la misma columna de una fila anterior
+            # ya fue marcada como correcta.
+            if self.grid_cells[r_prev][col]['state'] == 'correct':
+                # Si es así, forzamos que la celda actual también sea correcta
+                self.grid_cells[row][col]['state'] = 'correct'
+                # Rompemos el bucle porque ya hemos encontrado lo que buscábamos
+                break
 
     def update_grid_colors(self):
         for r in range(self.num_intentos):
@@ -276,9 +301,21 @@ class WordleSolverApp:
 
         # Rellenar la fila encontrada con la palabra
         for i, char in enumerate(word.upper()):
-            cell_widget = self.grid_cells[target_row_index][i]['widget']
+            cell_data = self.grid_cells[target_row_index][i]
+            cell_widget = cell_data['widget']
+            
+            # Insertar la letra
             cell_widget.delete(0, tk.END)
             cell_widget.insert(0, char)
+
+            # --- INICIO DE LA MODIFICACIÓN ---
+            # ¡Aquí está la magia! Llamamos a la misma función de ayuda
+            self._heredar_estado_verde(target_row_index, i)
+            # --- FIN DE LA MODIFICACIÓN ---
+
+        # Actualizamos los colores de TODA la parrilla UNA SOLA VEZ al final,
+        # para que sea más eficiente.
+        self.update_grid_colors()
 
     # MODIFICADO: La función `mostrar_resultados` ahora crea enlaces clicables
     # MODIFICADO: Versión corregida y simplificada que SÍ muestra las palabras clicables
